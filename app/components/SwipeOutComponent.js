@@ -109,7 +109,9 @@ class SwipeOutComponent extends Component {
 
     _AddToBD(tx) {
       var currentVideo = this.state.videoArray[this.state.currentVideoIndex];
-      tx.executeSql('INSERT INTO MyList (movie_name, youtube_id) VALUES ("' + currentVideo.title + '", "1xo3af_6_Jk");');
+      console.log(currentVideo);
+      tx.executeSql('INSERT INTO MyList (movie_name, movie_summary, movie_year, poster_path, youtube_id) VALUES ("' + currentVideo.title + '", "' + currentVideo.overview + '", "' + currentVideo.release_date + '", "' + currentVideo.poster_path + '", "' + this.state.currentVideoID + '");');
+
     }
 
     _CloseDatabase(){

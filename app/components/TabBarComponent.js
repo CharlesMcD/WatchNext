@@ -18,6 +18,16 @@ class TabBarComponent extends Component {
     super(props)
   }
 
+  handleChangeTab({i, ref, from }) {
+
+    console.log("i: " + i);
+    console.log("ref: " + ref);
+    console.log("from: " + from);
+
+    //this.children[i].onEnter();
+    //this.children[from].onLeave();
+  }
+
   render() {
 
     return <ScrollableTabView
@@ -41,7 +51,7 @@ class TabBarComponent extends Component {
 
       <ScrollView tabLabel="Ma liste" >
         <View >
-          <FavoriteListScreen navigator={this.props.navigator} />
+          <FavoriteListScreen navigator={this.props.navigator}/>
         </View>
       </ScrollView>
 

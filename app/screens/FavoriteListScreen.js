@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, Text, View, ListView, TouchableOpacity, Navigator, RefreshControl} from 'react-native'
+import { AppRegistry, StyleSheet, Text, View, ListView, TouchableOpacity, Navigator, RefreshControl, Image, Dimensions, InteractionManager, Animated} from 'react-native'
 import ViewContainer from 'WatchNext/app/components/ViewContainer'
 import StatusBarBackground from 'WatchNext/app/components/StatusBarBackground'
 //import SwipeOutComponent from 'WatchNext/app/components/SwipeOutComponent'
@@ -29,15 +29,32 @@ class FavoriteListScreen extends Component {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2})
 
     this.state = {
-      movieDataSource : ds.cloneWithRows(movieList)
+      movieDataSource : ds.cloneWithRows(movieList),
+      fadeAnim: new Animated.Value(0)
     }
 
-    this.loadAndQueryDB();
   }
 
   componentDidMount() {
     console.log("MONTER!");
+
+    InteractionManager.runAfterInteractions(() => {
+      this.loadAndQueryDB();
+      fadeIn(this);
+    });
+
+    function fadeIn(_that)
+    {
+        that = _that;
+
+        Animated.timing(          // Uses easing functions
+            that.state.fadeAnim,    // The value to drive
+            {toValue: 1}            // Configuration
+        ).start();
+    }
+    
   }
+
 
   loadAndQueryDB(){
     movieList = [];
@@ -57,11 +74,11 @@ class FavoriteListScreen extends Component {
         var that = this;
         console.log("Executing movie query");
 
-        tx.executeSql('SELECT movie_name, youtube_id FROM MyList').then(([tx,results]) => {
+        tx.executeSql('SELECT movie_name, movie_summary, movie_year, poster_path, youtube_id FROM MyList').then(([tx,results]) => {
             var len = results.rows.length;
             for (let i = 0; i < len; i++) {
                 let row = results.rows.item(i);
-                movieList.push({firstName: row.movie_name, lastName: row.youtube_id, number: null});
+                movieList.push({movieName: row.movie_name, releaseYear: row.movie_year, summary: row.movie_summary, posterPath: row.poster_path, youtube_id: row.youtube_id});
             }
 
             that.setState({movieDataSource: that.getDataSource(movieList) });
@@ -72,9 +89,13 @@ class FavoriteListScreen extends Component {
         });
     }
 
-  getDataSource(movies) {
-    return this.state.movieDataSource.cloneWithRows(movies);
-  }
+    getDataSource(movies) {
+        return this.state.movieDataSource.cloneWithRows(movies);
+    }
+
+    refreshList() {
+        this.loadAndQueryDB();   
+    }
 
 
   render() {
@@ -84,37 +105,54 @@ class FavoriteListScreen extends Component {
         <StatusBarBackground />
 
         <TouchableOpacity style={styles.ButtonIcon}>
-          <Button backgroundColor="#5c97ce" onPress={() => this.loadAndQueryDB()}>
+          <Button backgroundColor="#5c97ce" onPress={() => this.refreshList()}>
               Rafraichir
           </Button>
         </TouchableOpacity>
 
-        <ListView
+        <Animated.View style={{opacity: this.state.fadeAnim}}>
+         <ListView
           style={{marginTop:20}}
           dataSource={this.state.movieDataSource}
           renderRow={(person) => { return this._renderPersonRow(person)} }
           renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}
           enableEmptySections={true}
           />
+        </Animated.View>
 
       </ViewContainer>
 
     );
   }
 
-  _renderPersonRow(person) {
+  _renderPersonRow(movie) {
+
+    console.log(movie);
+
     return (
-        <TouchableOpacity style={styles.personRow} onPress={ (event) => this._navigateToPersonShow(person)}>
-          <View style={{flex: 1}}>
-            <Text style={styles.personName}>
-              {_.capitalize(person.firstName)} {_.capitalize(person.lastName)}
-            </Text>
-          </View>
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.movieRow} onPress={ (event) => this._navigateToMovieShow(movie)}>
+                <View>
+                    <Image style={styles.image} source={{uri: 'https://image.tmdb.org/t/p/w500' + movie.posterPath}}/>
+                </View>
+
+                <View>
+                    <Text style={styles.movieName}>
+                        {_.capitalize(movie.movieName)}
+                    </Text>
+                    <Text style={styles.movieYear}>
+                        ({movie.releaseYear})
+                    </Text>
+                    <View style={{flex: 1}}>
+                        <Text style={styles.movieSummary}>
+                            {_.truncate(movie.summary, {'length': 80})}
+                        </Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
     )
   }
 
-  _navigateToPersonShow(person) {
+  _navigateToMovieShow(person) {
     this.props.navigator.push({
       ident: "PersonShow",
       person: person,
@@ -132,21 +170,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  personRow: {
-    padding: 12,
-    flexDirection: "row",
-    justifyContent: "flex-start",
-  },
+  movieRow: {
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        marginBottom: 10,
+        marginLeft: 10,
+        marginTop: 10
+    },
+    listView : {
+        marginBottom: 50
+    },
+    movieName: {
+        fontSize: 20,
+        color: "black",
+        width: Dimensions.get('window').width - 125
+    },
+    movieYear: {
 
-  personName: {
-    alignItems:'center',
-  },
-
-  personIcon: {
-    marginRight: 25,
-    position: 'absolute',
-    right: 0
-  },
+    },
+    movieSummary: {
+        width: Dimensions.get('window').width - 125
+    },
+    image: {
+        width: 90,
+        height: 125,
+        resizeMode: 'cover',
+        marginRight: 10
+    },
 
   separator: {
     flex: 1,

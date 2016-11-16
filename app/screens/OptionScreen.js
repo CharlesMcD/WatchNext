@@ -88,6 +88,9 @@ class OptionScreen extends Component {
         tx.executeSql('CREATE TABLE IF NOT EXISTS MyList( '
             + 'movie_id INTEGER PRIMARY KEY NOT NULL, '
             + 'movie_name VARCHAR(150), '
+            + 'movie_summary VARCHAR(10000), '
+            + 'movie_year INTEGER(10), '
+            + 'poster_path VARCHAR(400), '
             + 'youtube_id VARCHAR(30));').catch((error) => {  
             that.errorCB(error) 
         });
@@ -95,9 +98,11 @@ class OptionScreen extends Component {
         this.state.progress.push("Executing INSERT stmts");
         this.setState(this.state);
 
-        tx.executeSql('INSERT INTO MyList (movie_name, youtube_id) VALUES ("Teaser Trailer: Pirates of the Caribbean: Dead Men Tell No Tales", "1xo3af_6_Jk");');
-        tx.executeSql('INSERT INTO MyList (movie_name, youtube_id) VALUES ("Logan | Official Trailer [HD] | 20th Century FOX", "Div0iP65aZo");');
+/*
+        tx.executeSql('INSERT INTO MyList (movie_name, movie_summary, movie_year, poster_path, youtube_id) VALUES ("Teaser Trailer: Pirates of the Caribbean: Dead Men Tell No Tales", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas ultrices dictum ultrices. Nunc blandit et nulla vel finibus. Pellentesque vitae dolor sed orci finibus malesuada et eget augue. Mauris scelerisque tristique pharetra. Nulla facilisi. Pellentesque scelerisque gravida leo, in pharetra libero posuere id. Aenean sit amet ornare leo.", "1969", "/xfWac8MTYDxujaxgPVcRD9yZaul.jpg" , "1xo3af_6_Jk");');
 
+        tx.executeSql('INSERT INTO MyList (movie_name, movie_summary, movie_year, poster_path, youtube_id) VALUES ("Les aventure de Felix", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas ultrices dictum ultrices. Nunc blandit et nulla vel finibus. Pellentesque vitae dolor sed orci finibus malesuada et eget augue. Mauris scelerisque tristique pharetra. Nulla facilisi. Pellentesque scelerisque gravida leo, in pharetra libero posuere id. Aenean sit amet ornare leo.", "2010", "/WLQN5aiQG8wc9SeKwixW7pAR8K.jpg" , "1xo3af_6_Jk");');
+*/
         console.log("all config SQL done");
     }
 
@@ -105,13 +110,13 @@ class OptionScreen extends Component {
         var that = this;
         console.log("Executing movie query");
 
-        tx.executeSql('SELECT movie_name, youtube_id FROM MyList').then(([tx,results]) => {
+        tx.executeSql('SELECT movie_name, poster_path FROM MyList').then(([tx,results]) => {
             that.state.progress.push("Query completed");
             that.setState(that.state);
             var len = results.rows.length;
             for (let i = 0; i < len; i++) {
                 let row = results.rows.item(i);
-                that.state.progress.push(`MOVIE_NAME: ${row.movie_name}, MOVIE_ID: ${row.youtube_id}`);
+                that.state.progress.push(`MOVIE_NAME: ${row.movie_name}, MOVIE_ID: ${row.poster_path}`);
             }
             that.setState(that.state);
         }).catch((error) => { 

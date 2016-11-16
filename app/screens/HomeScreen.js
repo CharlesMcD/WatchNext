@@ -39,6 +39,7 @@ class HomeScreen extends Component {
   }
 
   _navigateToVideo() {
+
     this.getMoviesFromApi().then(() => {
         this.props.navigator.push({
           ident: "SwipeShow",
