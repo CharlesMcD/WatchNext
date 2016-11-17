@@ -127,8 +127,6 @@ class FavoriteListScreen extends Component {
 
   _renderPersonRow(movie) {
 
-    console.log(movie);
-
     return (
         <TouchableOpacity style={styles.movieRow} onPress={ (event) => this._navigateToMovieShow(movie)}>
                 <View>
@@ -144,7 +142,7 @@ class FavoriteListScreen extends Component {
                     </Text>
                     <View style={{flex: 1}}>
                         <Text style={styles.movieSummary}>
-                            {_.truncate(movie.summary, {'length': 80})}
+                            {_.truncate(movie.summary, {'length': 120})}
                         </Text>
                     </View>
                 </View>
@@ -152,13 +150,14 @@ class FavoriteListScreen extends Component {
     )
   }
 
-  _navigateToMovieShow(person) {
+  _navigateToMovieShow(movie) {
     this.props.navigator.push({
-      ident: "PersonShow",
-      person: person,
-      //sceneConfig:Navigator.SceneConfigs.FloatFromBottom
+      ident: "MovieShow",
+      movie: movie
     })
+    
   }
+
 
 }
 

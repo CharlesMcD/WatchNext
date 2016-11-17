@@ -2,11 +2,13 @@
 import Swipeout from 'react-native-swipeout';
 
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, Text, View, Navigator, TouchableOpacity, Dimensions} from 'react-native'
+import { AppRegistry, StyleSheet, Text, View, Navigator, TouchableOpacity, Dimensions, ActivityIndicator, Switch, Animated} from 'react-native'
 
 import YoutubeShowScreen from 'WatchNext/app/screens/YoutubeShowScreen'
+
 import Orientation from 'react-native-orientation';
 import { Icon } from 'react-native-elements'
+import { BlurView, VibrancyView } from 'react-native-blur'
 
 import SQLite from 'react-native-sqlite-storage'
 
@@ -22,6 +24,11 @@ class SwipeOutComponent extends Component {
       this._loadAndAddMovieToDB = this._loadAndAddMovieToDB.bind(this);
       this._AddToBD = this._AddToBD.bind(this);
       this._SetNextMovie = this._SetNextMovie.bind(this);
+      this._handleVideoIsPlaying = this._handleVideoIsPlaying.bind(this);
+      this._handleVideoIsStopped = this._handleVideoIsStopped.bind(this);
+      
+
+      
       
 
       this.SetYoutubeIdFromApi(this.state.videoArray[this.state.currentVideoIndex].id);
@@ -37,6 +44,9 @@ class SwipeOutComponent extends Component {
         text: 'Refuser' ,
         onPress: () => this._declineVideo(),
       }];
+
+      //console.log(this.refs.fieldEditor1.state)
+
     }
 
     state = {
@@ -45,7 +55,9 @@ class SwipeOutComponent extends Component {
         currentVideoID: "",
         videoArray: this.props.videoArray,
         currentVideoIndex: 0,
-        pageNumber: 1
+        pageNumber: 1,
+        showBlurs: true,
+        fadeAnim: new Animated.Value(100),
       };
 
 
@@ -59,6 +71,29 @@ class SwipeOutComponent extends Component {
 
     componentWillUnmount() {
       Orientation.removeOrientationListener(this._orientationDidChange);
+    }
+
+
+    fadeIn(_that, value)
+    {
+        that = _that;
+
+        if(value == true) {
+          that.setState({showBlurs: value})
+
+            Animated.timing(
+              that.state.fadeAnim,
+              {toValue: 1,
+              duration: 0}
+          ).start();
+        }
+        else {
+            Animated.timing(
+              that.state.fadeAnim,
+              {toValue: 0,
+              duration: 1200}
+          ).start(() => that.setState({showBlurs: value}));
+        }
     }
 
 
@@ -151,10 +186,7 @@ class SwipeOutComponent extends Component {
         //Aller chercher le trailer officiel parmis la liste de video (s'il existe)
         var bestTrailerIndex = this.getBestTrailerIndex(responseJson.results);
 
-        this.setState({ currentVideoID: responseJson.results[bestTrailerIndex].key });
-
-        console.log("nouveau ID");
-        console.log(responseJson.results[bestTrailerIndex].key);
+        this.setState({ currentVideoID: responseJson.results[bestTrailerIndex].key }, this._handleVideoIsStopped);
 
       } catch(error) {
         console.error(error);
@@ -191,6 +223,15 @@ class SwipeOutComponent extends Component {
       )
     }
 
+    _handleVideoIsPlaying() {
+      this.setState({ showBlurs: false });
+      console.log("La video à starté!")
+    } 
+
+    _handleVideoIsStopped() {
+      this.setState({ showBlurs: true });
+      console.log("La video à arreté!")
+    } 
 
     render() {
       return (
@@ -204,7 +245,29 @@ class SwipeOutComponent extends Component {
               autoClose={true}>
 
               <View style={{height:this.state.dimension.height}}>
-                <YoutubeShowScreen videoID={this.state.currentVideoID}/>
+                
+                <View style={styles.bContainer}>
+                  <YoutubeShowScreen ref="YoutubeShowScreen" handleVideoIsPlaying={this._handleVideoIsPlaying} handleVideoIsStopped={this._handleVideoIsStopped} videoID={this.state.currentVideoID}/>
+
+                  {(this.state.showBlurs
+
+                    ? <View style={styles.bContainer}>
+                    
+                      <Animated.View style={[{opacity: this.state.fadeAnim}, styles.bContainer]}>  
+                        <BlurView blurType="dark" blurAmount={15} style={[styles.blurContainer, styles.bContainer]}>
+                          <ActivityIndicator
+                          size="large"
+                          animating={true}
+                          style={styles.spinner} />
+                        </BlurView>
+                      </Animated.View>
+
+                      </View>
+
+                    : null
+                  )}
+                </View>
+
                 <Text style={styles.titleText}>
                   {this.state.videoArray[this.state.currentVideoIndex].title}
                 </Text>
@@ -282,7 +345,16 @@ var styles = StyleSheet.create({
   statusbar: {
     backgroundColor: '#fff',
     height: 22,
-  }
+  },
+  bContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    backgroundColor: 'transparent',
+  },
+  blurContainer: {
+    paddingHorizontal: 20,
+  },
 })
 
 module.exports = SwipeOutComponent

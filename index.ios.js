@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { AppRegistry, StyleSheet, Navigator, Text} from 'react-native'
 
 import PeopleIndexScreen from './app/screens/PeopleIndexScreen'
-import PersonShowScreen from './app/screens/PersonShowScreen'
+import MovieShowScreen from './app/screens/MovieShowScreen'
 import VideoShowScreen from './app/screens/VideoShowScreen'
 import SwipeShowScreen from './app/screens/SwipeShowScreen'
 import YoutubeShowScreen from './app/screens/YoutubeShowScreen'
@@ -31,11 +31,11 @@ class WatchNext extends Component {
           <PeopleIndexScreen {...globalNavigatorProps} />
         )
 
-      case "PersonShow":
+      case "MovieShow":
         return (
-          <PersonShowScreen
+          <MovieShowScreen
           {...globalNavigatorProps}
-          person={route.person}/>
+          movie={route.movie}/>
         )
 
       case "SwipeShow":

@@ -1,6 +1,7 @@
 package com.watchnext;
 
 import com.facebook.react.ReactActivity;
+import com.cmcewen.blurview.BlurViewPackage;
 import com.github.yamill.orientation.OrientationPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.oblador.vectoricons.VectorIconsPackage;

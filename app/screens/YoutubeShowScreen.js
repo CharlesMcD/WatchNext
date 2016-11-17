@@ -46,6 +46,21 @@ class YoutubeShowScreen extends Component {
     }
   }
 
+  changeVideoStateHandler(e) {
+    this.setState({status: e.state})
+
+    if((e.state == "playing" || e.state == "paused") && this.state.currentTime > 0) {
+      this.props.handleVideoIsPlaying();
+    }
+    else {
+      this.props.handleVideoIsStopped();
+    }
+
+    console.log(e.state)
+  }
+
+
+
   render() {
 
     const flexCompleted = this.getCurrentTimePercentage() * 100;
@@ -67,7 +82,7 @@ class YoutubeShowScreen extends Component {
               controls={0}
               onProgress={this.onProgress}
               onReady={(e)=>{this.setState({isReady: true})}}
-              onChangeState={(e)=>{this.setState({status: e.state})}}
+              onChangeState={(e)=>{this.changeVideoStateHandler(e)}}
               onChangeQuality={(e)=>{this.setState({quality: e.quality})}}
               onError={(e)=>{this.setState({error: e.error})}}
               style={[this.state.currentTime > 0 ? [styles.showVideo , {height:this.dimension.height}] : styles.hideVideo]}
