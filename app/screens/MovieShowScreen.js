@@ -68,7 +68,6 @@ class MovieShowScreen extends Component {
           <Icon name="ios-arrow-back" size={40}/>
         </TouchableOpacity>
 
-        
 
         <Text style={{marginTop:20, fontSize:20, marginLeft: 20}}>{'Person show screen'}</Text>
         <Text style={styles.personName}>{_.capitalize(this.props.movie.movieName)} {_.capitalize(this.props.movie.releaseYear)} </Text>
@@ -97,8 +96,6 @@ class MovieShowScreen extends Component {
           )}
 
         </View>
-
-
 
       </ViewContainer>
 

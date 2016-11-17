@@ -28,9 +28,6 @@ class SwipeOutComponent extends Component {
       this._handleVideoIsStopped = this._handleVideoIsStopped.bind(this);
       
 
-      
-      
-
       this.SetYoutubeIdFromApi(this.state.videoArray[this.state.currentVideoIndex].id);
 
       this.likeBtn = [{
@@ -187,6 +184,7 @@ class SwipeOutComponent extends Component {
         var bestTrailerIndex = this.getBestTrailerIndex(responseJson.results);
 
         this.setState({ currentVideoID: responseJson.results[bestTrailerIndex].key }, this._handleVideoIsStopped);
+          
 
       } catch(error) {
         console.error(error);
@@ -224,12 +222,14 @@ class SwipeOutComponent extends Component {
     }
 
     _handleVideoIsPlaying() {
-      this.setState({ showBlurs: false });
+      //this.setState({ showBlurs: false });
+      this.fadeIn(this, false);
       console.log("La video à starté!")
     } 
 
     _handleVideoIsStopped() {
-      this.setState({ showBlurs: true });
+      //this.setState({ showBlurs: true });
+      this.fadeIn(this, true);
       console.log("La video à arreté!")
     } 
 
@@ -247,7 +247,7 @@ class SwipeOutComponent extends Component {
               <View style={{height:this.state.dimension.height}}>
                 
                 <View style={styles.bContainer}>
-                  <YoutubeShowScreen ref="YoutubeShowScreen" handleVideoIsPlaying={this._handleVideoIsPlaying} handleVideoIsStopped={this._handleVideoIsStopped} videoID={this.state.currentVideoID}/>
+                  <YoutubeShowScreen handleVideoIsPlaying={this._handleVideoIsPlaying} handleVideoIsStopped={this._handleVideoIsStopped} videoID={this.state.currentVideoID}/>
 
                   {(this.state.showBlurs
 

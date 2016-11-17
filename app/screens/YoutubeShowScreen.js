@@ -46,6 +46,7 @@ class YoutubeShowScreen extends Component {
     }
   }
 
+
   changeVideoStateHandler(e) {
     this.setState({status: e.state})
 
@@ -56,8 +57,12 @@ class YoutubeShowScreen extends Component {
       this.props.handleVideoIsStopped();
     }
 
+
     console.log(e.state)
   }
+
+
+
 
 
 
