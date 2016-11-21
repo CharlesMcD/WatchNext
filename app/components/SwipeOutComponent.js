@@ -26,6 +26,9 @@ class SwipeOutComponent extends Component {
       this._SetNextMovie = this._SetNextMovie.bind(this);
       this._handleVideoIsPlaying = this._handleVideoIsPlaying.bind(this);
       this._handleVideoIsStopped = this._handleVideoIsStopped.bind(this);
+      this._handleInvalidVideo = this._handleInvalidVideo.bind(this);
+      
+      
       
 
       this.SetYoutubeIdFromApi(this.state.videoArray[this.state.currentVideoIndex].id);
@@ -108,21 +111,28 @@ class SwipeOutComponent extends Component {
     _SetNextMovie() {
       var nextIndex = this.state.currentVideoIndex + 1;
 
-      if(nextIndex == 20)
-      {
-        nextIndex = 0;
-        nextPageNumber = this.state.pageNumber + 1;
-        this.setState({ pageNumber: nextPageNumber });
-
-        this.getMoviesListFromApi();
-      }
+      console.log("INDEX: " + nextIndex);
 
       function stateCallBack()
       {
         this.SetYoutubeIdFromApi(this.state.videoArray[this.state.currentVideoIndex].id);
       }
 
-      this.setState({ currentVideoIndex: nextIndex }, stateCallBack);
+      if(nextIndex == 20)
+      {
+        nextIndex = 0;
+        nextPageNumber = this.state.pageNumber + 1;
+
+        this.state.pageNumber = nextPageNumber;
+
+        var that = this;
+        this.getMoviesListFromApi().then(function(){ that.setState({ currentVideoIndex: nextIndex }, stateCallBack)});
+
+      }
+      else {
+          this.setState({ currentVideoIndex: nextIndex }, stateCallBack);
+      }
+      
     }
 
     _declineVideo() {
@@ -142,8 +152,9 @@ class SwipeOutComponent extends Component {
     _AddToBD(tx) {
       var currentVideo = this.state.videoArray[this.state.currentVideoIndex];
       console.log(currentVideo);
-      tx.executeSql('INSERT INTO MyList (movie_name, movie_summary, movie_year, poster_path, youtube_id) VALUES ("' + currentVideo.title + '", "' + currentVideo.overview + '", "' + currentVideo.release_date + '", "' + currentVideo.poster_path + '", "' + this.state.currentVideoID + '");');
 
+      tx.executeSql('INSERT INTO MyList (movie_name, movie_summary, movie_year, poster_path, youtube_id) VALUES ("' + currentVideo.title.replace(/[\""]/g, '') + '", "' + 
+      currentVideo.overview.replace(/[\""]/g, '') + '", "' + currentVideo.release_date + '", "' + currentVideo.poster_path + '", "' + this.state.currentVideoID + '");');
     }
 
     _CloseDatabase(){
@@ -163,6 +174,8 @@ class SwipeOutComponent extends Component {
 
     async getMoviesListFromApi() {
 
+      console.log("Nouvelle liste");
+
       try {
         let response = await fetch('https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&page=' + this.state.pageNumber + ' &api_key=9a08e0161bf22bda67444f5d7fe41bc0');
         let responseJson = await response.json();
@@ -176,12 +189,18 @@ class SwipeOutComponent extends Component {
 
     async SetYoutubeIdFromApi(imdbVideoId) {
 
+      console.log(imdbVideoId);
+
       try {
         let response = await fetch('https://api.themoviedb.org/3/movie/' + imdbVideoId + '/videos?api_key=9a08e0161bf22bda67444f5d7fe41bc0&language=en-US');
         let responseJson = await response.json();
 
         //Aller chercher le trailer officiel parmis la liste de video (s'il existe)
         var bestTrailerIndex = this.getBestTrailerIndex(responseJson.results);
+
+        while(bestTrailerIndex == -1) {
+          
+        }
 
         this.setState({ currentVideoID: responseJson.results[bestTrailerIndex].key }, this._handleVideoIsStopped);
           
@@ -194,14 +213,22 @@ class SwipeOutComponent extends Component {
     getBestTrailerIndex(trailerList) {
       var index = 0;
 
-      for (i = 0; i < trailerList.length; i++) { 
-        let name = trailerList[i].name.toLowerCase()
+      if(trailerList.length != 0) {
 
-        if(name.includes("trailer") && name.includes("official")) {
-          index = i;
-          break;
+        for (i = 0; i < trailerList.length; i++) { 
+          let name = trailerList[i].name.toLowerCase()
+
+          if(name.includes("trailer") && name.includes("official")) {
+            index = i;
+            break;
+          }
         }
+
       }
+      else {
+        index = -1
+      }
+
       return index;
     }
 
@@ -233,6 +260,19 @@ class SwipeOutComponent extends Component {
       console.log("La video à arreté!")
     } 
 
+    _handleInvalidVideo() {
+      console.log(this);
+      this._declineVideo();
+      console.log("La video invalide on switch!")
+    } 
+
+/*
+    _handleSwitchVideo() {
+      this.refs.YoutubePlayer.resetCurrentTime();
+      console.log("RESET du current time")
+    } 
+*/
+
     render() {
       return (
         <View style={styles.container}>
@@ -247,14 +287,14 @@ class SwipeOutComponent extends Component {
               <View style={{height:this.state.dimension.height}}>
                 
                 <View style={styles.bContainer}>
-                  <YoutubeShowScreen handleVideoIsPlaying={this._handleVideoIsPlaying} handleVideoIsStopped={this._handleVideoIsStopped} videoID={this.state.currentVideoID}/>
+                  <YoutubeShowScreen ref="YoutubePlayer" handleVideoIsPlaying={this._handleVideoIsPlaying} handleVideoIsStopped={this._handleVideoIsStopped} handleInvalidVideo={this._handleInvalidVideo} videoID={this.state.currentVideoID}/>
 
                   {(this.state.showBlurs
 
                     ? <View style={styles.bContainer}>
                     
                       <Animated.View style={[{opacity: this.state.fadeAnim}, styles.bContainer]}>  
-                        <BlurView blurType="dark" blurAmount={15} style={[styles.blurContainer, styles.bContainer]}>
+                        <BlurView blurType="dark" blurAmount={20} style={[styles.blurContainer, styles.bContainer]}>
                           <ActivityIndicator
                           size="large"
                           animating={true}

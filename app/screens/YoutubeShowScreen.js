@@ -50,11 +50,16 @@ class YoutubeShowScreen extends Component {
   changeVideoStateHandler(e) {
     this.setState({status: e.state})
 
-    if((e.state == "playing" || e.state == "paused") && this.state.currentTime > 0) {
+    if((e.state == "playing" || e.state == "paused")) {
+      console.log(this.state.currentTime);
       this.props.handleVideoIsPlaying();
     }
+    else if(e.state == "unstarted"){
+      this.props.handleInvalidVideo();
+    }
+
     else {
-      this.props.handleVideoIsStopped();
+      //this.props.handleVideoIsStopped();
     }
 
 
@@ -62,8 +67,14 @@ class YoutubeShowScreen extends Component {
   }
 
 
+  resetCurrentTime() {
+    console.log("RESET APPELÉ");
+    this.setState({currentTime: 0}, console.log("VOICI LE CURRENT TIME: " + this.state.currentTime))
 
 
+
+    //console.log("VOICI LE CURRENT TIME: " + this.state.currentTime)
+  }
 
 
   render() {
